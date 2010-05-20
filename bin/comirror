@@ -1,0 +1,76 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use 5.010;
+
+use WWW::Mechanize;
+
+my $mech = WWW::Mechanize->new(
+	stack_depth => 0,
+);
+
+sub usage {
+	die("Usage: comirror <start url>\n");
+}
+
+sub find_next_link {
+	foreach my $re (
+		qr{ ^ next $ }ix,
+		qr{   next   }ix,
+	)
+	{
+		my $link = $mech->find_link(text_regex => $re);
+		if ($link) {
+			return $link;
+		}
+	}
+	die("Cannot find next link\n");
+}
+
+my $uri = shift or usage();
+
+while (
+	$mech->get($uri)
+	and $mech->success()
+	and $mech->status() == 200
+      )
+{
+	say $mech->uri();
+
+	$uri = find_next_link->url();
+
+	if ($uri == $mech->uri) {
+		die("Looks like we're in a loop, bailing out\n");
+	}
+
+	sleep(1);
+}
+
+
+
+
+__END__
+
+=head1 NAME
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head1 OPTIONS
+
+=head1 EXIT STATUS
+
+=head1 CONFIGURATION
+
+=head1 DEPENDENCIES
+
+=head1 BUGS AND LIMITATIONS
+
+=head1 AUTHOR
+
+Copyright (C) 2010 by Daniel Friesel E<lt>derf@chaosdorf.deE<gt>
+
+=head1 LICENSE
+
+  0. You just DO WHAT THE FUCK YOU WANT TO.

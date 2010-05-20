@@ -29,6 +29,7 @@ sub find_next_link {
 			return $link;
 		}
 	}
+	save_lasturi();
 	die("Cannot find next link\n");
 }
 

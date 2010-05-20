@@ -6,7 +6,7 @@ use 5.010;
 use WWW::Mechanize;
 
 my $mech = WWW::Mechanize->new(
-	stack_depth => 0,
+	stack_depth => 2,
 );
 
 my $uri      = shift || read_file('last_uri');
@@ -78,6 +78,11 @@ sub read_file {
 }
 
 sub save_lasturi {
+
+	# Some webcomics have a non-regular page for the last (as in, latest)
+	# image. Work around this.
+	$mech->back();
+
 	open(my $fh, '>', 'last_uri') or die("Cannot open last_uri: $!\n");
 	print {$fh} $mech->uri->as_string;
 	close($fh) or die("Cannot close last_uri: $!\n");

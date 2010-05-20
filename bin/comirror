@@ -9,10 +9,6 @@ my $mech = WWW::Mechanize->new(
 	stack_depth => 0,
 );
 
-sub usage {
-	die("Usage: comirror <start url>\n");
-}
-
 sub find_next_link {
 	foreach my $re (
 		qr{ ^ next $ }ix,
@@ -27,7 +23,40 @@ sub find_next_link {
 	die("Cannot find next link\n");
 }
 
-my $uri = shift or usage();
+sub read_file {
+	my ($filename) = @_;
+	my ($line, $fh);
+
+	if (not open($fh, '<', $filename)) {
+		warn("Cannot open $filename: $!\n");
+		return;
+	}
+
+	$line = <$fh>;
+	close($fh) or warn("Cannot close $filename: $!\n");
+
+	chomp $line;
+	return $line;
+}
+
+sub save_lasturi {
+	open(my $fh, '>', 'last_uri') or die("Cannot open last_uri: $!\n");
+	print {$fh} $mech->uri->as_string;
+	close($fh) or die("Cannot close last_uri: $!\n");
+	return;
+}
+
+my $uri      = shift || read_file('last_uri');
+my $image_re = read_file('image_re');
+
+if (not defined $uri or not defined $image_re) {
+	die("last_uri or image_re not found / specified\n");
+}
+
+$SIG{INT} = sub {
+	save_lasturi();
+	exit(0);
+};
 
 while (
 	$mech->get($uri)
@@ -41,6 +70,7 @@ while (
 	$uri = find_next_link->URI->abs->as_string;
 
 	if ($uri eq $mech->uri->as_string) {
+		save_lasturi();
 		die("Looks like we're in a loop, bailing out\n");
 	}
 

@@ -35,11 +35,12 @@ while (
 	and $mech->status() == 200
       )
 {
-	say $mech->uri();
+	say $mech->uri->as_string;
+	say $uri;
 
-	$uri = find_next_link->url();
+	$uri = find_next_link->URI->abs->as_string;
 
-	if ($uri == $mech->uri) {
+	if ($uri eq $mech->uri->as_string) {
 		die("Looks like we're in a loop, bailing out\n");
 	}
 

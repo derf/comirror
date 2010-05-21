@@ -9,8 +9,8 @@ my $mech = WWW::Mechanize->new(
 	stack_depth => 2,
 );
 
-my $uri      = shift || read_file('last_uri');
-my $image_re = read_file('image_re');
+my $uri      = shift || first_line('last_uri');
+my $image_re = first_line('image_re');
 
 if (not defined $uri or not defined $image_re) {
 	die("last_uri or image_re not found / specified\n");
@@ -61,7 +61,7 @@ sub get_image {
 	return;
 }
 
-sub read_file {
+sub first_line {
 	my ($filename) = @_;
 	my ($line, $fh);
 
@@ -89,7 +89,7 @@ sub save_lasturi {
 	return;
 }
 
-$SIG{INT} = sub {
+local $SIG{INT} = sub {
 	save_lasturi();
 	exit(0);
 };
@@ -112,6 +112,7 @@ while (
 	}
 
 	print "\n";
+	# Avoid accidently DoSing webservers.
 	sleep(1);
 }
 

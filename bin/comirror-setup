@@ -3,10 +3,6 @@ use strict;
 use warnings;
 use 5.010;
 
-use constant {
-	MIN_COMIC_DIM => 12
-};
-
 use WWW::Mechanize;
 
 sub line_to_file {

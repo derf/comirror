@@ -48,7 +48,18 @@ sub find_next_link {
 }
 
 sub find_image {
-	my $image = $mech->find_image(url_abs_regex => $image_re);
+	my $image;
+
+	if (
+		$conf{'link-to-image'}
+		and $mech->find_link(url_abs_regex => $image_re)
+	   )
+	{
+		$image = $mech->find_link(url_abs_regex => $image_re);
+	}
+	else {
+		$image = $mech->find_image(url_abs_regex => $image_re);
+	}
 
 	if ($image) {
 		my $tmpmech = WWW::Mechanize->new();
@@ -192,6 +203,14 @@ A regular expression matching the URL of the webcomic image to be saved.
 
 The text on the link to the next image.  Can be left out if it contains
 "next".
+
+=item link-to-image
+
+If this is set to a true value, B<comirror> will first try to find a link
+pointing to image_re and only if that fails look directly for images.  This is
+useful for comics with small-ish preview images which link to larger ones.
+
+The future of this option is unclear, such behaviour may become the default.
 
 =back
 

@@ -1,0 +1,96 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use 5.010;
+
+use constant {
+	MIN_COMIC_DIM => 12
+};
+
+use WWW::Mechanize;
+
+sub line_to_file {
+	my ($line, $file) = @_;
+	open(my $fh, '>', $file) or die("Can't open $file for writing: $!\n");
+	say {$fh} $line;
+	close($fh) or die("Can't close $file: $!\n");
+	return;
+}
+
+my @mechs;
+my @images;
+my @unique_images;
+my ($image_re, $cache) = (q{}) x 2;
+my $length;
+
+local $| = 1;
+
+if (@ARGV != 3 ) {
+	die("Need three URLs to compare (first, second, last but one)\n");
+}
+
+print 'Fetching pages';
+
+for my $url (@ARGV) {
+	push(@mechs, WWW::Mechanize->new( stackdepth => 0 ));
+	$mechs[-1]->get($url);
+	print q{.};
+}
+
+print "\nComparing images";
+
+for my $i ( 0 .. $#mechs ) {
+	for my $image ($mechs[$i]->find_all_images()) {
+		push(@{$images[$i]}, $image->url_abs());
+	}
+	print q{.};
+}
+
+print "\n";
+
+# A bit fragile so far. We assume that every site is exactly the same, except
+# for the actual comic image. For this to work, we need to be sure that we are
+# not comparing with a first or last site, because those may be missing a
+# next/prev icon and therefore confuse us.
+
+for my $i ( 0 .. $#{$images[1]} ) {
+	if ($images[1]->[$i] ne $images[2]->[$i]) {
+		push(@unique_images, [$images[1]->[$i], $images[2]->[$i]]);
+	}
+}
+
+# XKCD has a weird robot detection image. So we just take the first
+# @unique_images element for now. Again, this could use more elegance some
+# time.
+
+if (length($unique_images[0]->[0]) <= length($unique_images[0]->[1])) {
+	$length = length($unique_images[0]->[0]);
+}
+else {
+	$length = length($unique_images[0]->[1]);
+}
+
+for my $offset ( 0 .. $length ) {
+	my $char1 = substr($unique_images[0]->[0], $offset, 1);
+	my $char2 = substr($unique_images[0]->[1], $offset, 1);
+
+	if ($char1 ne $char2) {
+		$image_re .= q{.+};
+		last;
+	}
+
+	$cache .= $char1;
+
+	# Prevent using .../something.+ if we happen to have two images whose
+	# names start with the same letter(s). Again, fragile.
+	if ($char1 =~ / [^a-zA-Z0-9] /x) {
+		$image_re .= $cache;
+		$cache = q{};
+	}
+}
+
+line_to_file($ARGV[0], 'last_uri');
+line_to_file($image_re, 'image_re');
+
+print "\nimage_re: ${image_re}\n\n";
+print "If this is correct, type 'comirror' to start mirroring\n";

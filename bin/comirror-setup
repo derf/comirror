@@ -39,6 +39,7 @@ print "\nComparing images";
 for my $i ( 0 .. $#mechs ) {
 	for my $image ($mechs[$i]->find_all_images()) {
 		push(@{$images[$i]}, $image->url_abs());
+		say "$i $images[$i]->[-1]";
 	}
 	print q{.};
 }
@@ -94,6 +95,7 @@ for my $offset ( 0 .. $length ) {
 
 line_to_file($ARGV[0], 'last_uri');
 line_to_file($image_re, 'image_re');
+line_to_file($next_link, 'next_link');
 
 print "\nimage_re: ${image_re}\n\n";
 say "\"next\" link text: ${next_link}";

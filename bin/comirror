@@ -12,6 +12,7 @@ my $mech = WWW::Mechanize->new(
 my $uri      = shift || first_line('last_uri');
 my $image_re = first_line('image_re');
 my $exit     = 1;
+my $next_link_text;
 
 if (not defined $uri or not defined $image_re) {
 	die("last_uri or image_re not found / specified\n");
@@ -19,15 +20,29 @@ if (not defined $uri or not defined $image_re) {
 
 $image_re = qr{$image_re};
 
+if (-e 'next_link') {
+	$next_link_text = first_line('next_link');
+}
+
 sub find_next_link {
-	foreach my $re (
-		qr{ ^ next $ }ix,
-		qr{   next   }ix,
-	)
-	{
-		my $link = $mech->find_link(text_regex => $re);
+
+	if (defined $next_link_text) {
+		my $link = $mech->find_link(text => $next_link_text);
 		if ($link) {
 			return $link;
+		}
+	}
+	else {
+
+		foreach my $re (
+			qr{ ^ next $ }ix,
+			qr{   next   }ix,
+		)
+		{
+			my $link = $mech->find_link(text_regex => $re);
+			if ($link) {
+				return $link;
+			}
 		}
 	}
 	save_lasturi();

@@ -11,6 +11,7 @@ my $mech = WWW::Mechanize->new(
 
 my $uri      = shift || first_line('last_uri');
 my $image_re = first_line('image_re');
+my $exit     = 1;
 
 if (not defined $uri or not defined $image_re) {
 	die("last_uri or image_re not found / specified\n");
@@ -30,7 +31,8 @@ sub find_next_link {
 		}
 	}
 	save_lasturi();
-	die("Cannot find next link\n");
+	say "Cannot find next link. We might have reached the end of the comic.";
+	exit $exit;
 }
 
 sub find_image {
@@ -52,10 +54,11 @@ sub get_image {
 		say "img: $filename (skipped)";
 	}
 	else {
+		$exit = 0;
 		say "img: $filename";
-		open(my $fh, '>', $filename) or die("Cannot open $filename: $!\n");
+		open(my $fh, '>', $filename) or die("Cannot open $filename: $!");
 		print {$fh} $tmpmech->content();
-		close($fh) or die("Cannot close $filename: $!\n");
+		close($fh) or die("Cannot close $filename: $!");
 	}
 
 	return;
@@ -83,15 +86,15 @@ sub save_lasturi {
 	# image. Work around this.
 	$mech->back();
 
-	open(my $fh, '>', 'last_uri') or die("Cannot open last_uri: $!\n");
+	open(my $fh, '>', 'last_uri') or die("Cannot open last_uri: $!");
 	print {$fh} $mech->uri->as_string;
-	close($fh) or die("Cannot close last_uri: $!\n");
+	close($fh) or die("Cannot close last_uri: $!");
 	return;
 }
 
 local $SIG{INT} = sub {
 	save_lasturi();
-	exit(0);
+	exit $exit;
 };
 
 while (
@@ -108,7 +111,9 @@ while (
 
 	if ($uri eq $mech->uri->as_string) {
 		save_lasturi();
-		die("Looks like we're in a loop, bailing out\n");
+		say "The 'next' link lead us to a loop.";
+		say "This is probably because we reached the end of the comic.";
+		exit $exit;
 	}
 
 	print "\n";
@@ -140,9 +145,9 @@ B<comirror> takes no options.
 
 =head1 EXIT STATUS
 
-Zero if interrupted by the user (eg SIGINT), non-zero if terminating after
-reaching the end of the comic (loop or no "next" link).  So, a non-zero exit
-status is normal.  However, this behaviour may be changed in the near future.
+Zero if at least one new comic image was downloaded, one if either no images
+were found or all found images already existed in the current directory.  Any
+other non-zero means indicates grave errors.
 
 =head1 CONFIGURATION
 

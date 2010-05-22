@@ -6,6 +6,19 @@ use Cwd;
 use Test::More tests => 26;
 use Test::Cmd;
 
+sub check_key {
+	my ($test, $filetype, $key, $value) = @_;
+	my @lines;
+	$test->read(\@lines, "comirror.${filetype}");
+
+	if(grep { $_ eq "$key\t$value\n" } @lines) {
+		pass("${filetype}: ${key} = ${value}");
+	}
+	else {
+		fail("${filetype}: ${key} = ${value}");
+	}
+}
+
 for my $next_type (qw/ loop none /) {
 
 	my $test = Test::Cmd->new( prog => 'bin/comirror', workdir => q{} );
@@ -16,7 +29,8 @@ for my $next_type (qw/ loop none /) {
 
 	ok($test, "Create Test::Cmd object ($next_type)");
 
-	$test->write('image_re', "${next_base}/.+");
+	$test->write('comirror.conf', "image_re\t${next_base}/.+\n");
+
 	$exit = $test->run(
 		chdir => $cwd,
 		args => "${next_base}/1.xhtml",
@@ -27,8 +41,7 @@ for my $next_type (qw/ loop none /) {
 	isnt($test->stdout, q{}, 'First run: Non-empty stdout');
 	is  ($test->stderr, q{}, 'First run: Empty stderr');
 
-	$test->read(\$str, 'last_uri');
-	is($str, "${next_base}/4.xhtml", "Correct last_uri ($next_type)");
+	check_key($test, 'state', 'uri', "${next_base}/4.xhtml");
 
 	for my $i (1 .. 5) {
 		ok(-e "$cwd/$i.jpg",

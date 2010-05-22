@@ -13,6 +13,19 @@ my $next_base = 'file://' . getcwd() . '/test/next-loop';
 my ($str, $exit);
 my @links;
 
+sub check_key {
+	my ($filetype, $key, $value) = @_;
+	my @lines;
+	$test->read(\@lines, "comirror.${filetype}");
+
+	if(grep { $_ eq "$key\t$value\n" } @lines) {
+		pass("${filetype}: ${key} = ${value}");
+	}
+	else {
+		fail("${filetype}: ${key} = ${value}");
+	}
+}
+
 ok($test, 'Create Test::Cmd object');
 
 $exit = $test->run(
@@ -38,8 +51,6 @@ ok($exit == 0, 'Correct usage: return zero');
 isnt($test->stdout, q{}, 'Correct usage: Something to stdout');
 is  ($test->stderr, q{}, 'Correct usage: Nothing to stderr');
 
-$test->read(\$str, 'last_uri');
-is($str, "$links[0]\n", 'Correct last_uri');
+check_key('state', 'uri', $links[0]);
 
-$test->read(\$str, 'image_re');
-is($str, "${next_base}/.+\n", 'Correct image_re');
+check_key('conf', 'image_re', "${next_base}/.+");

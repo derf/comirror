@@ -9,10 +9,11 @@ my $mech = WWW::Mechanize->new(
 	stack_depth => 2,
 );
 
-my $uri      = shift || first_line('last_uri');
-my $image_re = first_line('image_re');
+my %conf     = file_to_hash('comirror.conf');
+my %state    = file_to_hash('comirror.state');
+my $uri      = shift || $state{'uri'};
+my $image_re = $conf{'image_re'};
 my $exit     = 1;
-my $next_link_text;
 
 if (not defined $uri or not defined $image_re) {
 	die("last_uri or image_re not found / specified\n");
@@ -20,14 +21,10 @@ if (not defined $uri or not defined $image_re) {
 
 $image_re = qr{$image_re};
 
-if (-e 'next_link') {
-	$next_link_text = first_line('next_link');
-}
-
 sub find_next_link {
 
-	if (defined $next_link_text) {
-		my $link = $mech->find_link(text => $next_link_text);
+	if (defined $conf{'next_link'}) {
+		my $link = $mech->find_link(text => $conf{'next_link'});
 		if ($link) {
 			return $link;
 		}
@@ -45,7 +42,7 @@ sub find_next_link {
 			}
 		}
 	}
-	save_lasturi();
+	save_state();
 	say "Cannot find next link. We might have reached the end of the comic.";
 	exit $exit;
 }
@@ -79,36 +76,40 @@ sub get_image {
 	return;
 }
 
-sub first_line {
-	my ($filename) = @_;
-	my ($line, $fh);
+sub file_to_hash {
+	my ($file) = @_;
+	my %return;
 
-	if (not open($fh, '<', $filename)) {
-		warn("Cannot open $filename: $!\n");
+	if (not -e $file) {
 		return;
 	}
 
-	$line = <$fh>;
-	close($fh) or warn("Cannot close $filename: $!\n");
-
-	chomp $line;
-	return $line;
+	open(my $fh, '<', $file) or die("Cannot read $file: $!\n");
+	while(my $line = <$fh>) {
+		$line =~ / ^ (?<key> \S+ ) [[:space:]]+ (?<value> .*) $ /x or next;
+		$return{$+{key}} = $+{value};
+	}
+	close($fh);
+	return %return;
 }
 
-sub save_lasturi {
-
+sub save_state {
 	# Some webcomics have a non-regular page for the last (as in, latest)
 	# image. Work around this.
 	$mech->back();
 
-	open(my $fh, '>', 'last_uri') or die("Cannot open last_uri: $!");
-	print {$fh} $mech->uri->as_string;
+	$state{'uri'} = $mech->uri->as_string;
+
+	open(my $fh, '>', 'comirror.state') or die("Cannot open comirror.state: $!");
+	while (my ($key, $value) = each(%state)) {
+		print {$fh} "$key\t$value\n";
+	}
 	close($fh) or die("Cannot close last_uri: $!");
 	return;
 }
 
 local $SIG{INT} = sub {
-	save_lasturi();
+	save_state();
 	exit $exit;
 };
 
@@ -125,7 +126,7 @@ while (
 	$uri = find_next_link->URI->abs->as_string;
 
 	if ($uri eq $mech->uri->as_string) {
-		save_lasturi();
+		save_state();
 		say "The 'next' link lead us to a loop.";
 		say "This is probably because we reached the end of the comic.";
 		exit $exit;
@@ -162,28 +163,49 @@ B<comirror> takes no options.
 
 Zero if at least one new comic image was downloaded, one if either no images
 were found or all found images already existed in the current directory.  Any
-other non-zero means indicates grave errors.
+other non-zero return value indicates grave errors.
 
 =head1 CONFIGURATION
 
 B<comirror> is designed to operate in the current working directory.  Images
-are saved to it and a few files ard read by B<comirror> as configuration
-parameters.
+are saved to it; the configuration is read from F<comirror.conf> and the last
+state (if any) is read from F<comirror.state>.
+
+Both files are formatted in the form key <tab> value with one key-value pair
+per line.  Comments or empty lines are not supported.  F<comirror.state> is
+automatically written when B<comirror> terminates.
+
+=head2 COMIRROR.CONF
+
+A little explanation of the F<comirror.conf> keys.
+Note that comirror-setup(1) will automatically create this file for you, you
+only need to edit it if comirror-setup(1) didn't work properly or you don't
+want to use it at all.
 
 =over
 
-=item F<image_re>
+=item image_re
 
 A regular expression matching the URL of the webcomic image to be saved.
-You can either create the file manually or let it be created by
-comirror-setup(1).
 
-=item F<last_uri>
+=item next_link
 
-The URI to the last but one comic site before B<comirror> exited is
-automatically written to this file.  If this file exists and B<comirror> is
-called without arguments, it will automatically resume crawling the webcomic
-from that point on.
+The text on the link to the next image.  Can be left out if it contains
+"next".
+
+=back
+
+=head2 COMIRROR.STATE
+
+You should not need to edit this.
+
+=over
+
+=item uri
+
+Absolute URI to the last but one comic page B<comirror> was inspecting.  Can
+be overridden by the commandline argument.  Exists so that B<comirror> will
+resume its comic crawl from the right point when it's started again.
 
 =back
 

@@ -5,22 +5,24 @@ use 5.010;
 
 use WWW::Mechanize;
 
-sub line_to_file {
-	my ($line, $file) = @_;
-	open(my $fh, '>', $file) or die("Can't open $file for writing: $!\n");
-	say {$fh} $line;
-	close($fh) or die("Can't close $file: $!\n");
-	return;
-}
-
 my @mechs;
 my @images;
 my @unique_images;
 my ($image_re, $cache) = (q{}) x 2;
 my $length;
-my $next_link;
+my ($conf, $state);
 
 local $| = 1;
+
+sub hash_to_file {
+	my ($hash, $file) = @_;
+	open(my $fh, '>', $file) or die("Can't open $file for writing: $!\n");
+	while (my ($key, $value) = each(%{$hash})) {
+		print {$fh} "$key\t$value\n";
+	}
+	close($fh);
+	return;
+}
 
 if (@ARGV != 3 ) {
 	die("Need three URLs to compare (first, second, last but one)\n");
@@ -39,7 +41,6 @@ print "\nComparing images";
 for my $i ( 0 .. $#mechs ) {
 	for my $image ($mechs[$i]->find_all_images()) {
 		push(@{$images[$i]}, $image->url_abs());
-		say "$i $images[$i]->[-1]";
 	}
 	print q{.};
 }
@@ -48,7 +49,7 @@ print "\n";
 
 for my $link ($mechs[0]->find_all_links()) {
 	if ($link->url_abs eq $ARGV[1]) {
-		$next_link = $link->text;
+		$conf->{'next_link'} = $link->text;
 	}
 }
 
@@ -93,13 +94,17 @@ for my $offset ( 0 .. $length ) {
 	}
 }
 
-line_to_file($ARGV[0], 'last_uri');
-line_to_file($image_re, 'image_re');
-line_to_file($next_link, 'next_link');
+$state->{'uri'} = $ARGV[0];
 
-print "\nimage_re: ${image_re}\n\n";
-say "\"next\" link text: ${next_link}";
-say "If this is correct, type 'comirror' to start mirroring";
+$conf->{'image_re'} = $image_re;
+
+hash_to_file($conf , 'comirror.conf' );
+hash_to_file($state, 'comirror.state');
+
+say "\nimage_re: $conf->{image_re}";
+say "\"next\" link text: $conf->{next_link}";
+
+say "\nIf this is correct, type 'comirror' to start mirroring";
 
 __END__
 
@@ -113,14 +118,17 @@ B<comirror-setup> I<comis urls...>
 
 =head1 DESCRIPTION
 
-B<comirror-setup> takes three URL argumets: The very first page of the web
+B<comirror-setup> takes three URL arguments: The very first page of the web
 comic, the second page, and the last but one page.
 
 Based on these arguments, it tries to set up the current working directory so
 that you only need to call B<comirror> to mirror the webcomic you were
 pointing to.  It does this by comparing the last two URLs to determine a
-correct image_re and then creating last_uri with the first URL so that
-B<comirror> will start at the right point and download the right images.
+correct regular expression for the comic images and comparing the first two to
+figure out the text on the "next" link.
+
+It then creates F<comirror.conf> and F<comirror.state> so that you only need
+to call comirror(1) to start downloading.
 
 =head1 OPTIONS
 
@@ -147,7 +155,7 @@ get what you want.
 
 =head1 AUTHOR
 
-Copyright (C) @@year@@ by Daniel Friesel E<lt>derf@chaosdorf.deE<gt>
+Copyright (C) 2010 by Daniel Friesel E<lt>derf@chaosdorf.deE<gt>
 
 =head1 LICENSE
 

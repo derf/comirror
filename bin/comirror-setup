@@ -18,6 +18,7 @@ my @images;
 my @unique_images;
 my ($image_re, $cache) = (q{}) x 2;
 my $length;
+my $next_link;
 
 local $| = 1;
 
@@ -43,6 +44,12 @@ for my $i ( 0 .. $#mechs ) {
 }
 
 print "\n";
+
+for my $link ($mechs[0]->find_all_links()) {
+	if ($link->url_abs eq $ARGV[1]) {
+		$next_link = $link->text;
+	}
+}
 
 # A bit fragile so far. We assume that every site is exactly the same, except
 # for the actual comic image. For this to work, we need to be sure that we are
@@ -89,4 +96,5 @@ line_to_file($ARGV[0], 'last_uri');
 line_to_file($image_re, 'image_re');
 
 print "\nimage_re: ${image_re}\n\n";
-print "If this is correct, type 'comirror' to start mirroring\n";
+say "\"next\" link text: ${next_link}";
+say "If this is correct, type 'comirror' to start mirroring";

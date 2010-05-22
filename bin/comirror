@@ -123,19 +123,65 @@ __END__
 
 =head1 NAME
 
+B<comirror> - Generic webcomic mirrorer
+
 =head1 SYNOPSIS
+
+B<comirror> [I<comic url>]
 
 =head1 DESCRIPTION
 
+B<comirror> "reads" a webcomic while saving the comic images to the current
+working directory.
+
 =head1 OPTIONS
+
+B<comirror> takes no options.
 
 =head1 EXIT STATUS
 
+Zero if interrupted by the user (eg SIGINT), non-zero if terminating after
+reaching the end of the comic (loop or no "next" link).  So, a non-zero exit
+status is normal.  However, this behaviour may be changed in the near future.
+
 =head1 CONFIGURATION
+
+B<comirror> is designed to operate in the current working directory.  Images
+are saved to it and a few files ard read by B<comirror> as configuration
+parameters.
+
+=over
+
+=item F<image_re>
+
+A regular expression matching the URL of the webcomic image to be saved.
+You can either create the file manually or let it be created by
+comirror-setup(1).
+
+=item F<last_uri>
+
+The URI to the last but one comic site before B<comirror> exited is
+automatically written to this file.  If this file exists and B<comirror> is
+called without arguments, it will automatically resume crawling the webcomic
+from that point on.
+
+=back
 
 =head1 DEPENDENCIES
 
+B<comirror> requires the perl module WWW::Mechanize
+
 =head1 BUGS AND LIMITATIONS
+
+This script has no brain.  It has very limited knowledge about the usual
+layout of a webcomic and makes a few guesses which happen to work in a lot of
+cases.  However, there may well be webcomics which (combined with a
+unrestrictive image_re) lead B<comirror> to crawling lots of non-comic images.
+So of course, use at your own risk.
+
+=head1 SEE ALSO
+
+comirror-setup(1)
 
 =head1 AUTHOR
 

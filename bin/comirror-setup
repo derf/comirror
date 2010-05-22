@@ -98,3 +98,55 @@ line_to_file($image_re, 'image_re');
 print "\nimage_re: ${image_re}\n\n";
 say "\"next\" link text: ${next_link}";
 say "If this is correct, type 'comirror' to start mirroring";
+
+__END__
+
+=head1 NAME
+
+B<comirror-setup> - Set up a directory to be used by B<comirror>
+
+=head1 SYNOPSIS
+
+B<comirror-setup> I<comis urls...>
+
+=head1 DESCRIPTION
+
+B<comirror-setup> takes three URL argumets: The very first page of the web
+comic, the second page, and the last but one page.
+
+Based on these arguments, it tries to set up the current working directory so
+that you only need to call B<comirror> to mirror the webcomic you were
+pointing to.  It does this by comparing the last two URLs to determine a
+correct image_re and then creating last_uri with the first URL so that
+B<comirror> will start at the right point and download the right images.
+
+=head1 OPTIONS
+
+B<comirror-setup> takes no options yet.
+
+=head1 EXIT STATUS
+
+Non-zero on grave errors, zero otherwise.
+
+=head1 CONFIGURATION
+
+B<comirror-setup> is not configurable.
+
+=head1 DEPENDENCIES
+
+This script requires the perl module WWW::Mechanize.
+
+=head1 BUGS AND LIMITATIONS
+
+As with B<comirror> itself: This script has no brain.
+So far, this script is very dumb and fragile.  It's recommended to take a
+quick glance at the image_re before actually calling comirror to make sure you
+get what you want.
+
+=head1 AUTHOR
+
+Copyright (C) @@year@@ by Daniel Friesel E<lt>derf@chaosdorf.deE<gt>
+
+=head1 LICENSE
+
+  0. You just DO WHAT THE FUCK YOU WANT TO.

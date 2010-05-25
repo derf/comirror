@@ -51,7 +51,7 @@ sub find_image {
 	my $image;
 
 	if (
-		$conf{'link-to-image'}
+		$conf{'link_to_image'}
 		and $mech->find_link(url_abs_regex => $image_re)
 	   )
 	{
@@ -204,7 +204,7 @@ A regular expression matching the URL of the webcomic image to be saved.
 The text on the link to the next image.  Can be left out if it contains
 "next".
 
-=item link-to-image
+=item link_to_image
 
 If this is set to a true value, B<comirror> will first try to find a link
 pointing to image_re and only if that fails look directly for images.  This is

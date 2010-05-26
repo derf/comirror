@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use 5.010;
 
+use Getopt::Long;
 use WWW::Mechanize;
 
 my @mechs;
@@ -11,6 +12,20 @@ my @unique_images;
 my ($image_re, $cache) = (q{}) x 2;
 my $length;
 my ($conf, $state);
+my @opts = (
+	[
+		'batch',
+		q{},
+		undef,
+		0,
+	],
+	[
+		'link-to-image',
+		q{!},
+		'Try downloading links instead of images matching image_re first?',
+		0,
+	],
+);
 
 local $| = 1;
 
@@ -18,11 +33,34 @@ sub hash_to_file {
 	my ($hash, $file) = @_;
 	open(my $fh, '>', $file) or die("Can't open $file for writing: $!\n");
 	while (my ($key, $value) = each(%{$hash})) {
+		$key =~ tr/-/_/;
 		print {$fh} "$key\t$value\n";
 	}
 	close($fh);
 	return;
 }
+
+sub parse_or_ask_options {
+
+	if ($conf->{'batch'}) {
+		delete $conf->{'batch'};
+		return;
+	}
+
+	for my $ref (@opts) {
+		my ($opt, $desc, $default) = @{$ref}[0, 2, 3];
+
+		if (defined $desc and not exists $conf->{$opt}) {
+			print "${desc} (default: ${default}) ";
+			my $reply = <STDIN>;
+			chomp $reply;
+			$conf->{$opt} = $reply;
+		}
+	}
+	return;
+}
+
+GetOptions(\%{$conf}, map { $_->[0] . $_->[1] } @opts);
 
 if (@ARGV != 3 ) {
 	die("Need three URLs to compare (first, second, last but one)\n");
@@ -98,13 +136,15 @@ $state->{'uri'} = $ARGV[0];
 
 $conf->{'image_re'} = $image_re;
 
-hash_to_file($conf , 'comirror.conf' );
-hash_to_file($state, 'comirror.state');
-
 say "\nimage_re: $conf->{image_re}";
 say "\"next\" link text: $conf->{next_link}";
 
-say "\nIf this is correct, type 'comirror' to start mirroring";
+parse_or_ask_options();
+
+hash_to_file($conf , 'comirror.conf' );
+hash_to_file($state, 'comirror.state');
+
+say "\nIf everything is correct, type 'comirror' to start mirroring";
 
 __END__
 

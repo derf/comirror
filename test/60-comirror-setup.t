@@ -43,7 +43,7 @@ for my $i (1 .. 5) {
 
 $exit = $test->run(
 	chdir => $cwd,
-	args => join(q{ }, @links[0, 1, 3]),
+	args => '--batch ' . join(q{ }, @links[0, 1, 3]),
 );
 
 ok($exit == 0, 'Correct usage: return zero');

@@ -11,7 +11,8 @@ my @images;
 my @unique_images;
 my ($image_re, $cache) = (q{}) x 2;
 my $length;
-my ($conf, $state);
+my $conf = {};
+my $state;
 my @opts = (
 	[
 		'batch',
@@ -63,7 +64,11 @@ sub parse_or_ask_options {
 	return;
 }
 
-GetOptions(\%{$conf}, map { $_->[0] . $_->[1] } @opts);
+GetOptions($conf, map { $_->[0] . $_->[1] } @opts);
+
+if (not -t STDOUT) {
+	$conf->{'batch'} = 1;
+}
 
 if (@ARGV != 3 ) {
 	die("Need three URLs to compare (first, second, last but one)\n");
@@ -173,9 +178,25 @@ figure out the text on the "next" link.
 It then creates F<comirror.conf> and F<comirror.state> so that you only need
 to call comirror(1) to start downloading.
 
+Unless all options (or B<--batch>) were specified on the commandline,
+B<comirror> will interactively ask the user for further options.
+
 =head1 OPTIONS
 
-B<comirror-setup> takes no options yet.
+=over
+
+=item B<--batch>
+
+Do not ask questions interactively.  Take default values or those specified
+via options on the commandline.
+
+=item B<--link-to-image> I<bool>
+
+First try downloading a link matching image_re, and if that fails look for an
+image matching image_re. Note that this does not (yet) affect image_re
+detection.
+
+=back
 
 =head1 EXIT STATUS
 

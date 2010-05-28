@@ -29,9 +29,12 @@ my @opts = (
 
 local $| = 1;
 
+binmode(STDOUT, ':utf8');
+
 sub hash_to_file {
 	my ($hash, $file) = @_;
 	open(my $fh, '>', $file) or die("Can't open $file for writing: $!\n");
+	binmode($fh, ':utf8');
 	while (my ($key, $value) = each(%{$hash})) {
 		$key =~ tr/-/_/;
 		print {$fh} "$key\t$value\n";

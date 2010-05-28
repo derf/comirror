@@ -96,6 +96,7 @@ sub file_to_hash {
 	}
 
 	open(my $fh, '<', $file) or die("Cannot read $file: $!\n");
+	binmode($fh, ':utf8');
 	while(my $line = <$fh>) {
 		$line =~ / ^ (?<key> \S+ ) [[:space:]]+ (?<value> .*) $ /x or next;
 		$return{$+{key}} = $+{value};

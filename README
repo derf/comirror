@@ -1,0 +1,16 @@
+comirror is an automated mirrorer for webcomics and image gallerys.
+
+Requires:
+ * perl >= 5.10
+ * WWW::Mechanize
+
+For testing:
+ * Test::Cmd
+ * Test::Compile
+ * Test::More
+ * Test::Pod
+
+Installation:
+> make
+> make test # optional
+> sudo make install

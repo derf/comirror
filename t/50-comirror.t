@@ -24,7 +24,7 @@ for my $next_type (qw/ loop none /) {
 	my $test = Test::Cmd->new( prog => 'bin/comirror', workdir => q{} );
 	my $cwd  = $test->workdir();
 
-	my $next_base = 'file://' . getcwd() . "/test/next-${next_type}";
+	my $next_base = 'file://' . getcwd() . "/t/next-${next_type}";
 	my ($str, $exit);
 
 	ok($test, "Create Test::Cmd object ($next_type)");

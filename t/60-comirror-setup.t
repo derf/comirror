@@ -26,7 +26,7 @@ for my $test_type (qw/loop unicroak/) {
 	$test = Test::Cmd->new( prog => 'bin/comirror-setup', workdir => q{} );
 	my $cwd  = $test->workdir();
 
-	my $next_base = 'file://' . getcwd() . "/test/next-${test_type}";
+	my $next_base = 'file://' . getcwd() . "/t/next-${test_type}";
 	my ($str, $exit);
 	my @links;
 

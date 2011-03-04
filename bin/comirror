@@ -9,6 +9,8 @@ my $mech = WWW::Mechanize->new(
 	stack_depth => 2,
 );
 
+our $VERSION = '0.1';
+
 my %conf     = file_to_hash('comirror.conf');
 my %state    = file_to_hash('comirror.state');
 my $uri      = shift || $state{'uri'};

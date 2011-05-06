@@ -1,0 +1,21 @@
+---
+name: comirror
+version: 0.1
+author:
+  - 'Copyright (C) 2010 by Daniel Friesel E<lt>derf@chaosdorf.deE<gt>'
+abstract: Generic webcomic mirrorer
+license: unrestricted
+build_requires:
+  Test::Cmd: 0
+  Test::Compile: 0
+  Test::More: 0
+  Test::Pod: 0
+requires:
+  WWW::Mechanize: 0
+  perl: v5.10.0
+configure_requires:
+  Module::Build: 0.340201
+generated_by: Module::Build version 0.340201
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4

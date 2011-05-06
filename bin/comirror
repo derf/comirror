@@ -17,10 +17,9 @@ my %state    = file_to_hash('comirror.state');
 my $uri      = shift || $state{'uri'};
 my $image_re = $conf{'image_re'};
 my $exit     = 1;
-my $version = '0.0-git';
 
 if ($uri ~~ ['-v', '--version']) {
-	say "comirror version $version";
+	say "comirror version $VERSION";
 	exit 0;
 }
 

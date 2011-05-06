@@ -33,7 +33,7 @@ my @opts = (
 		0,
 	],
 );
-my $version = '0.0-git';
+our $VERSION = '0.1';
 
 local $| = 1;
 
@@ -74,7 +74,7 @@ sub parse_or_ask_options {
 GetOptions($conf, map { $_->[0] . $_->[1] } @opts);
 
 if ($conf->{'version'}) {
-	say "comirror version $version";
+	say "comirror version $VERSION";
 	exit 0;
 }
 

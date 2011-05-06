@@ -225,7 +225,7 @@ This script requires the perl module WWW::Mechanize.
 
 =head1 BUGS AND LIMITATIONS
 
-As with B<comirror> itself: This script has no brain.
+As for B<comirror>: This script has no brain.
 So far, this script is very dumb and fragile.  It's recommended to take a
 quick glance at the image_re before actually calling comirror to make sure you
 get what you want.

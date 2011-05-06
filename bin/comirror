@@ -246,7 +246,7 @@ B<comirror> requires the perl module WWW::Mechanize
 
 This script has no brain.  It has very limited knowledge about the usual
 layout of a webcomic and makes a few guesses which happen to work in a lot of
-cases.  However, there may well be webcomics which (combined with a
+cases.  However, there may well be webcomics which (combined with an
 unrestrictive image_re) lead B<comirror> to crawling lots of non-comic images.
 So of course, use at your own risk.
 

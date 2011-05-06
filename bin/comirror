@@ -8,6 +8,7 @@ use WWW::Mechanize;
 my $mech = WWW::Mechanize->new(
 	stack_depth => 2,
 );
+$mech->agent_alias('Linux Mozilla');
 
 our $VERSION = '0.1';
 

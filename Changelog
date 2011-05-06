@@ -1,0 +1,6 @@
+comirror 0.1 - Fri May 06 2011
+
+    * Initial release
+    * Use comirror-setup to set up comirror.conf and comirror.state
+    * Then run comirror to leech images
+    * Tested and working on a few web comics

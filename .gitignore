@@ -2,7 +2,5 @@
 /_build/
 /Build
 /cover_db/
-/MANIFEST
-/MANIFEST.SKIP
-/MANIFEST.SKIP.bak
-/MYMETA.yml
+/MANIFEST*
+/MYMETA.*
